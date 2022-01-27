@@ -4,6 +4,29 @@ import numpy as np
 import os
 
 
+def loadImages(path):
+    # Current markers: 0, 1, 2, 3, 4, 5, 99
+
+    myList = os.listdir(path)
+    noOfMarkers = len(myList)
+    # print("Total number of markers in folder: " + str(noOfMarkers))
+
+    dict = {}
+    for imgPath in myList:
+        print(imgPath)
+        # Returns path and extension as a list of separate strings
+        key = os.path.splitext(imgPath)[0]
+        print(key)
+        newPath = f'{path}/{imgPath}'
+        print(newPath)
+        imgAug = cv.imread(newPath)
+        dict[key] = imgAug
+
+    print(dict['0'])
+
+    return dict
+
+
 def findArucoMarkers(img, markerSize=6, totalMarkers=250, draw=True):
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
@@ -34,7 +57,6 @@ def findArucoMarkers(img, markerSize=6, totalMarkers=250, draw=True):
 
 
 def augmentAruco(bboxes, id, img, imgAugment, drawId=True):
-
     topLeft = bboxes[0][0][0], bboxes[0][0][1]
     topRight = bboxes[0][1][0], bboxes[0][1][1]
     bottomRight = bboxes[0][2][0], bboxes[0][2][1]
@@ -78,13 +100,18 @@ def main():
     # Get video
     capture = cv.VideoCapture(0)
 
+    # Loading a single image
+    # imgAug = cv.imread('./Images/0.png')
+
+    # Loading from path
+    augImages = loadImages('Images')
+
     while True:
         isTrue, frame = capture.read()
         # Part 1: Find aruco markers and return bounding boxes and IDs
         arucoFound = findArucoMarkers(frame)
 
         # Part 2: Augment something on the markers
-        imgAug = cv.imread('./Images/nyu.png')
 
         # Loop through all markers and augment each one
         # Check if bounding box list is not empty
@@ -93,8 +120,12 @@ def main():
             for bboxes, id in zip(arucoFound[0], arucoFound[1]):
                 # print(bboxes, id)
 
-                # Actual augment
-                frame = augmentAruco(bboxes, id, frame, imgAug)
+                # Actual augment - one image
+                # frame = augmentAruco(bboxes, id, frame, imgAug)
+
+                # Actual augment - folder
+                frame = augmentAruco(
+                    bboxes, id, frame, augImages[str(int(id))])
 
         cv.imshow('Image', frame)
         cv.waitKey(1)
