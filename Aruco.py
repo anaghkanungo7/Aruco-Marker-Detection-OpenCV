@@ -65,6 +65,12 @@ def augmentAruco(bboxes, id, img, imgAugment, drawId=True):
     # Now, we can combine the images
     imgOut = img + imgOut
 
+    # Draw ID numbers
+    if drawId:
+        tl = int(topLeft[0]), int(topLeft[1])
+        cv.putText(imgOut, str(id), tl, cv.FONT_HERSHEY_COMPLEX,
+                   1, (0, 255, 255), thickness=2)
+
     return imgOut
 
 
